@@ -1,71 +1,23 @@
-const fs = require("fs");
 const express = require("express");
+const toursRouter = require("./routes/tourRouter");
+const userRouter = require("./routes/userRouter");
 
-const port = 3000;
 const app = express();
 app.use(express.json());
 
-// app.get("/", (req, res) => {
-//   res.json({ message: "Your app is running succesfuly..." });
-// });
+// This is how we can create a router
 
-// app.post("/", (req, res) => {
-//   res.status(200).json({ message: "You can post on this URL..." });
-// });
+// In the below present code I am separating the callback function from the route. But in this we need to write the route name for every specific route.
+// app.get("/api/v1/tours", getAllTours);
+// app.get("/api/v1/tours/:id", getTour);
+// app.post("/api/v1/tours", addTour);
 
-const tours = JSON.parse(
-  fs.readFileSync(`${__dirname}/dev-data/data/tours-simple.json`)
-);
+// In this code I am just writing the route name for once and then using all the work related to the same route by chaining then together.
+// app.route("/api/v1/tours").get(getAllTours).post(addTour);
+// app.route("/api/v1/tours/:id").get(getTour);
 
-app.get("/api/v1/tours", (req, res) => {
-  res.status(200).json({
-    status: "success",
-    results: "",
-    data: {
-      tours: tours,
-    },
-  });
-});
+// In this below code I am taking this one step more forward and only writing the whole common or base url at once and the after only writing and separating them by the changes only.
+app.use("/api/v1/tours", toursRouter);
+app.use("/api/v1/users", userRouter);
 
-app.get("/api/v1/tours/:id", (req, res) => {
-  const id = Number(req.params.id);
-  const tour = tours.find((el) => el.id === id);
-
-  if (!tour) {
-    return res.status(404).json({
-      status: "fail",
-      message: "Invalid ID",
-    });
-  }
-
-  res.status(200).json({
-    message: "success",
-    data: {
-      tour,
-    },
-  });
-});
-
-app.post("/api/v1/tours", (req, res) => {
-  const newId = tours[tours.length - 1].id + 1;
-
-  const newTour = Object.assign({ id: newId }, req.body);
-
-  tours.push(newTour);
-
-  fs.writeFile(
-    `${__dirname}/dev-data/data/tours-simple.json`,
-    JSON.stringify(tours),
-    (err) => {
-      res.status(201).json({
-        message: "success",
-        data: { tour: newTour },
-      });
-    }
-  );
-});
-
-// Creating a port where our server will listen
-app.listen(port, () => {
-  console.log(`Our app is running on PORT http://localhost:${port}`);
-});
+module.exports = app;
